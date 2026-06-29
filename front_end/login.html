@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录 — 赛事推荐与日程管理系统</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --primary: #1d4ed8;
+    --primary-dark: #1e3a8a;
+    --primary-light: #3b82f6;
+    --surface: #ffffff;
+    --bg: #f1f5f9;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-sub: #64748b;
+    --red: #ef4444;
+    --green: #22c55e;
+    --shadow: 0 20px 60px rgba(30,58,138,0.18);
+  }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f2460 0%, #1d4ed8 60%, #3b82f6 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    position: relative; overflow: hidden;
+  }
+  body::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .wrapper {
+    display: flex; width: 880px; border-radius: 20px; overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  /* ── 左侧面板 ── */
+  .side {
+    width: 340px; background: linear-gradient(170deg, #0f2460, #1d4ed8);
+    padding: 48px 36px; display: flex; flex-direction: column;
+    justify-content: center; color: #fff; flex-shrink: 0;
+    min-height: 480px;
+  }
+  .side-icon { font-size: 56px; margin-bottom: 20px; }
+  .side-slides { position: relative; min-height: 120px; }
+  .side-slide {
+    position: absolute; top: 0; left: 0; width: 100%;
+    opacity: 0; transition: opacity 0.6s ease;
+    pointer-events: none;
+  }
+  .side-slide.active { opacity: 1; pointer-events: auto; }
+  .side-slide h1 { font-size: 22px; font-weight: 700; line-height: 1.4; margin-bottom: 12px; }
+  .side-slide p  { font-size: 13px; line-height: 1.8; opacity: 0.75; }
+  .side-dots { display: flex; gap: 8px; margin-top: 36px; }
+  .side-dots span {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+    cursor: pointer;
+    transition: all 0.4s ease;
+  }
+  .side-dots span.active { background: #fff; width: 24px; border-radius: 4px; }
+
+  /* ── 右侧表单 ── */
+  .card { flex: 1; background: var(--surface); padding: 48px 44px; }
+  .card-header { margin-bottom: 32px; }
+  .card-header h2 { font-size: 24px; color: var(--text); font-weight: 700; }
+  .card-header p  { font-size: 13px; color: var(--text-sub); margin-top: 6px; }
+  .tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 28px; }
+  .tab {
+    flex: 1; text-align: center; padding: 10px 0; cursor: pointer;
+    font-size: 14px; color: var(--text-sub); font-weight: 600;
+    border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s;
+  }
+  .tab.active { color: var(--primary); border-color: var(--primary); }
+  .form-group { margin-bottom: 20px; }
+  .form-group label { display: block; font-size: 13px; color: var(--text); font-weight: 600; margin-bottom: 7px; }
+  .input-wrap { position: relative; }
+  .input-wrap .icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 16px; color: var(--text-sub); pointer-events: none;
+  }
+  .input-wrap input {
+    width: 100%; padding: 12px 14px 12px 42px;
+    border: 1.5px solid var(--border); border-radius: 10px;
+    font-size: 14px; color: var(--text); outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s; font-family: inherit;
+  }
+  .input-wrap input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(29,78,216,0.1);
+  }
+  .btn-submit {
+    width: 100%; padding: 14px; background: var(--primary); color: #fff;
+    border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
+    cursor: pointer; margin-top: 4px; transition: all 0.2s; letter-spacing: 2px;
+  }
+  .btn-submit:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(29,78,216,0.35); }
+  .btn-submit:active { transform: translateY(0); }
+  #msg { text-align: center; font-size: 13px; margin-top: 14px; min-height: 20px; }
+  .footer-link { text-align: center; margin-top: 20px; font-size: 13px; color: var(--text-sub); }
+  .footer-link a { color: var(--primary); cursor: pointer; font-weight: 600; text-decoration: none; }
+  .footer-link a:hover { text-decoration: underline; }
+  .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: var(--text-sub); font-size: 12px; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- ── 左侧轮播面板 ── -->
+  <div class="side">
+    <div class="side-icon">🏆</div>
+    <div class="side-slides">
+      <div class="side-slide active">
+        <h1>赛事推荐与<br>日程管理系统</h1>
+        <p>智能匹配适合您的竞赛项目，<br>一站式管理参赛日程与提醒，<br>助力您在竞赛中脱颖而出。</p>
+      </div>
+      <div class="side-slide">
+        <h1>精准推荐<br>专属赛事</h1>
+        <p>根据您的专业方向自动筛选，<br>国赛 · 省赛 · 校赛全覆盖，<br>不错过任何适合您的机会。</p>
+      </div>
+      <div class="side-slide">
+        <h1>日程管理<br>从未如此简单</h1>
+        <p>报名截止、比赛时间一目了然，<br>自动提醒功能帮您掌控节奏，<br>专注备赛，其余交给系统。</p>
+      </div>
+    </div>
+    <div class="side-dots" id="sideDots">
+      <span class="active" data-i="0" onclick="goSlide(0)"></span>
+      <span data-i="1" onclick="goSlide(1)"></span>
+      <span data-i="2" onclick="goSlide(2)"></span>
+    </div>
+  </div>
+
+  <!-- ── 右侧登录表单 ── -->
+  <div class="card">
+    <div class="card-header">
+      <h2>欢迎回来</h2>
+      <p>请使用您的账号登录系统</p>
+    </div>
+    <div class="tabs">
+      <div class="tab active" id="tab-student" onclick="switchTab('student')">🎓 学生登录</div>
+      <div class="tab" id="tab-admin"   onclick="switchTab('admin')">🔧 管理员登录</div>
+    </div>
+    <div class="form-group">
+      <label>用户名</label>
+      <div class="input-wrap">
+        <span class="icon">👤</span>
+        <input type="text" id="username" placeholder="请输入用户名" autocomplete="username">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>密码</label>
+      <div class="input-wrap">
+        <span class="icon">🔒</span>
+        <input type="password" id="pwd" placeholder="请输入密码" autocomplete="current-password">
+      </div>
+    </div>
+    <button class="btn-submit" onclick="doLogin()">登 录</button>
+    <div id="msg"></div>
+    <div class="divider">还没有账号？</div>
+    <div class="footer-link">
+      <a onclick="location.href='register.html'">立即注册，免费使用</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ── 动态读取后端地址 ── */
+  const BASE = `http://127.0.0.1:5000`;
+
+  /* ── 左侧轮播逻辑 ── */
+  const slides = document.querySelectorAll('.side-slide');
+  const dots   = document.querySelectorAll('#sideDots span');
+  let curIdx = 0;
+
+  function goSlide(idx) {
+    slides[curIdx].classList.remove('active');
+    dots[curIdx].classList.remove('active');
+    curIdx = idx;
+    slides[curIdx].classList.add('active');
+    dots[curIdx].classList.add('active');
+  }
+  setInterval(() => goSlide((curIdx + 1) % slides.length), 2000);
+
+  /* ── Tab 切换 ── */
+  let currentTab = 'student';
+  function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('tab-student').classList.toggle('active', tab === 'student');
+    document.getElementById('tab-admin').classList.toggle('active', tab === 'admin');
+    document.getElementById('msg').innerText = '';
+  }
+
+  /* ── 登录逻辑（修改：存储 role 和统一 userid） ── */
+  async function doLogin() {
+    const username = document.getElementById('username').value.trim();
+    const pwd      = document.getElementById('pwd').value.trim();
+    const msg      = document.getElementById('msg');
+    if (!username || !pwd) { msg.style.color = '#ef4444'; msg.innerText = '请填写用户名和密码'; return; }
+    msg.style.color = '#64748b';
+    msg.innerText = '正在验证身份…';
+    try {
+      const res = await fetch(`${BASE}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, pwd })
+      });
+      const result = await res.json();
+
+      if (result.code === 200) {  // 学生登录
+        localStorage.setItem('userid',   result.userid);    // 如 U001
+        localStorage.setItem('role',     'student');
+        localStorage.setItem('username', username);
+        localStorage.setItem('major',    result.major || '');
+        msg.style.color = '#22c55e';
+        msg.innerText = '✅ 登录成功，正在跳转…';
+        setTimeout(() => window.location.href = 'index.html', 800);
+      } else if (result.code === 201) {  // 管理员登录
+        // 管理员也使用 userid 字段存储 adminid，方便统一
+        localStorage.setItem('userid',   result.adminid);   // 如 A001
+        localStorage.setItem('role',     'admin');
+        localStorage.setItem('username', username);
+        // 注意：管理员没有 major，可不存
+        msg.style.color = '#22c55e';
+        msg.innerText = '✅ 管理员登录成功，正在跳转…';
+        setTimeout(() => window.location.href = 'index.html', 800);
+      } else {
+        msg.style.color = '#ef4444';
+        msg.innerText = result.msg || '用户名或密码错误';
+      }
+    } catch (e) {
+      msg.style.color = '#ef4444';
+      msg.innerText = '无法连接服务器，请确认后端已启动';
+    }
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+</script>
+</body>
+</html>

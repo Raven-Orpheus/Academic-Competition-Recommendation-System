@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>意见反馈 — 赛事推荐与日程管理系统</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --primary: #1d4ed8;
+    --primary-dark: #1e3a8a;
+    --surface: #ffffff;
+    --bg: #f1f5f9;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-sub: #64748b;
+    --green: #16a34a;
+    --red: #dc2626;
+  }
+  body { background: var(--bg); font-family: "Microsoft YaHei", "PingFang SC", sans-serif; min-height: 100vh; }
+
+  .navbar {
+    background: var(--primary-dark); color: #fff; padding: 0 48px; height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  }
+  .navbar-brand { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; }
+  .navbar-nav { display: flex; gap: 8px; }
+  .nav-link {
+    padding: 7px 16px; border-radius: 8px; color: rgba(255,255,255,0.75);
+    font-size: 13px; text-decoration: none; transition: all 0.2s; cursor: pointer;
+  }
+  .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.12); color: #fff; }
+
+  .container { padding: 48px; max-width: 760px; margin: 0 auto; }
+
+  .card {
+    background: var(--surface); border-radius: 18px; overflow: hidden;
+    border: 1.5px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+  }
+  .card-top {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    padding: 36px 40px; color: #fff;
+  }
+  .card-top h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .card-top p { font-size: 13px; opacity: 0.8; line-height: 1.7; }
+  .card-body { padding: 36px 40px; }
+
+  .form-group { margin-bottom: 24px; }
+  .form-label {
+    display: block; font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 8px;
+  }
+  .form-label .req { color: #ef4444; margin-left: 2px; }
+  .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .cat-btn {
+    padding: 10px 8px; border: 1.5px solid var(--border); border-radius: 9px;
+    text-align: center; cursor: pointer; font-size: 13px; color: var(--text-sub);
+    transition: all 0.2s; font-family: inherit; background: #fff;
+  }
+  .cat-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .cat-btn.selected {
+    background: #eff6ff; border-color: var(--primary); color: var(--primary); font-weight: 600;
+  }
+  textarea {
+    width: 100%; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: 10px;
+    font-size: 14px; resize: vertical; min-height: 160px; outline: none;
+    font-family: inherit; color: var(--text); line-height: 1.7;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(29,78,216,0.1);
+  }
+  .char-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+  .char-hint { font-size: 12px; color: var(--text-sub); }
+  .char-count { font-size: 12px; color: var(--text-sub); }
+  .char-count.warn { color: #ea580c; }
+
+  .btn-submit {
+    width: 100%; padding: 14px; background: var(--primary); color: #fff;
+    border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; font-family: inherit; letter-spacing: 1px;
+  }
+  .btn-submit:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(29,78,216,0.3); }
+  .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
+
+  #msg {
+    margin-top: 14px; font-size: 13px; min-height: 20px;
+    text-align: center; padding: 10px; border-radius: 8px;
+  }
+  #msg.ok { color: var(--green); background: #f0fdf4; }
+  #msg.err { color: var(--red); background: #fef2f2; }
+
+  .tips-list { margin-top: 0; }
+  .tip-item {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    font-size: 13px; color: var(--text-sub);
+  }
+  .tip-item:last-child { border-bottom: none; }
+  .tip-icon { color: var(--primary); flex-shrink: 0; margin-top: 1px; }
+</style>
+</head>
+<body>
+
+<div class="navbar">
+  <div class="navbar-brand">🏆 赛事推荐与日程管理系统</div>
+  <div class="navbar-nav">
+    <a class="nav-link" href="index.html">首页</a>
+    <a class="nav-link" href="competition.html">赛事列表</a>
+    <a class="nav-link" href="schedule.html">我的日程</a>
+    <a class="nav-link active">意见反馈</a>
+    <a class="nav-link" onclick="logout()">退出</a>
+  </div>
+</div>
+
+<div class="container">
+  <div class="card">
+    <div class="card-top">
+      <h2>💬 意见与建议</h2>
+      <p>您的反馈是改进系统的重要依据，我们认真对待每一条建议。<br>感谢您花时间帮助我们做得更好！</p>
+    </div>
+    <div class="card-body">
+      <div class="form-group">
+        <div class="form-label">反馈类别</div>
+        <div class="category-grid">
+          <button class="cat-btn" onclick="selectCat(this)">🐛 功能异常</button>
+          <button class="cat-btn" onclick="selectCat(this)">✨ 功能建议</button>
+          <button class="cat-btn" onclick="selectCat(this)">🎨 界面设计</button>
+          <button class="cat-btn" onclick="selectCat(this)">📋 赛事信息</button>
+          <button class="cat-btn" onclick="selectCat(this)">🔔 提醒功能</button>
+          <button class="cat-btn" onclick="selectCat(this)">💬 其他</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="content">
+          反馈内容 <span class="req">*</span>
+        </label>
+        <textarea
+          id="content"
+          placeholder="请详细描述您的问题或建议，以便我们更好地理解和改进（至少 10 个字符）…"
+          maxlength="500"
+          oninput="updateCount()">
+        </textarea>
+        <div class="char-row">
+          <span class="char-hint">建议描述清晰，方便开发团队快速定位和改进</span>
+          <span class="char-count" id="charCount">0 / 500</span>
+        </div>
+      </div>
+
+      <button class="btn-submit" id="submitBtn" onclick="submitFeedback()">提 交 反 馈</button>
+      <div id="msg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const BASE = `http://127.0.0.1:5000`;  const userid = localStorage.getItem('userid');
+  if (!userid) { alert('请先登录'); location.href = 'login.html'; }
+
+  let selectedCategory = '';
+
+  function selectCat(btn) {
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedCategory = btn.textContent.trim();
+  }
+
+  function updateCount() {
+    const len = document.getElementById('content').value.trim().length;
+    const el = document.getElementById('charCount');
+    el.textContent = len + ' / 500';
+    el.className = 'char-count' + (len > 450 ? ' warn' : '');
+  }
+
+  async function submitFeedback() {
+    const content = document.getElementById('content').value.trim();
+    const msg = document.getElementById('msg');
+    const btn = document.getElementById('submitBtn');
+
+    if (!content || content.length < 10) {
+      msg.className = 'err';
+      msg.innerText = '⚠️ 反馈内容至少需要 10 个字符';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '提交中…';
+    msg.className = '';
+    msg.innerText = '';
+
+    const fullContent = selectedCategory
+      ? `[${selectedCategory}] ${content}`
+      : content;
+
+    try {
+      const res = await fetch(`${BASE}/api/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userid, content: fullContent })
+      });
+      const result = await res.json();
+      if (result.code === 200) {
+        msg.className = 'ok';
+        msg.innerText = '✅ 反馈已成功提交，感谢您的宝贵建议！';
+        document.getElementById('content').value = '';
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+        selectedCategory = '';
+        updateCount();
+      } else {
+        msg.className = 'err';
+        msg.innerText = result.msg || '提交失败，请重试';
+      }
+    } catch (e) {
+      msg.className = 'err';
+      msg.innerText = '⚠️ 网络异常，请检查后端服务是否启动';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '提 交 反 馈';
+    }
+  }
+
+  function logout() {
+    if (confirm('确定要退出登录吗？')) {
+      localStorage.clear();
+      location.href = 'login.html';
+    }
+  }
+</script>
+</body>
+</html>

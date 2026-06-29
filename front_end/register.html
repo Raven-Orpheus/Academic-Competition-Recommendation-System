@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>注册 — 赛事推荐与日程管理系统</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --primary: #1d4ed8;
+    --primary-dark: #1e3a8a;
+    --primary-light: #3b82f6;
+    --surface: #ffffff;
+    --bg: #f1f5f9;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-sub: #64748b;
+    --red: #ef4444;
+    --green: #22c55e;
+    --shadow: 0 20px 60px rgba(30,58,138,0.18);
+  }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f2460 0%, #1d4ed8 60%, #3b82f6 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    position: relative; overflow: hidden;
+  }
+  body::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .wrapper {
+    display: flex; width: 880px; border-radius: 20px; overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .side {
+    width: 340px; background: linear-gradient(170deg, #0f2460, #1d4ed8);
+    padding: 48px 36px; display: flex; flex-direction: column;
+    justify-content: center; color: #fff; flex-shrink: 0;
+    min-height: 520px;
+  }
+  .side-icon { font-size: 56px; margin-bottom: 20px; }
+  .side h1 { font-size: 22px; font-weight: 700; line-height: 1.4; margin-bottom: 12px; }
+  .side p { font-size: 13px; line-height: 1.8; opacity: 0.75; }
+
+  .card { flex: 1; background: var(--surface); padding: 48px 44px; }
+  .card-header { margin-bottom: 28px; }
+  .card-header h2 { font-size: 24px; color: var(--text); font-weight: 700; }
+  .card-header p { font-size: 13px; color: var(--text-sub); margin-top: 6px; }
+  .form-group { margin-bottom: 18px; }
+  .form-group label { display: block; font-size: 13px; color: var(--text); font-weight: 600; margin-bottom: 7px; }
+  .input-wrap { position: relative; }
+  .input-wrap .icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 16px; color: var(--text-sub); pointer-events: none;
+  }
+  .input-wrap input, .input-wrap select {
+    width: 100%; padding: 12px 14px 12px 42px;
+    border: 1.5px solid var(--border); border-radius: 10px;
+    font-size: 14px; color: var(--text); outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s; font-family: inherit;
+    background: white;
+  }
+  .input-wrap input:focus, .input-wrap select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(29,78,216,0.1);
+  }
+  .input-wrap select { appearance: auto; padding-right: 12px; }
+
+  .btn-submit {
+    width: 100%; padding: 14px; background: var(--primary); color: #fff;
+    border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
+    cursor: pointer; margin-top: 8px; transition: all 0.2s; letter-spacing: 2px;
+  }
+  .btn-submit:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(29,78,216,0.35); }
+  #msg { text-align: center; font-size: 13px; margin-top: 14px; min-height: 20px; }
+  .footer-link { text-align: center; margin-top: 18px; font-size: 13px; color: var(--text-sub); }
+  .footer-link a { color: var(--primary); cursor: pointer; font-weight: 600; text-decoration: none; }
+  .footer-link a:hover { text-decoration: underline; }
+  .divider { display: flex; align-items: center; gap: 12px; margin: 18px 0; color: var(--text-sub); font-size: 12px; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .hidden { display: none !important; }
+  .hint { font-size: 12px; color: var(--text-sub); margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="side">
+    <div class="side-icon">🏆</div>
+    <h1>加入我们<br>开启竞赛之旅</h1>
+    <p>注册账号，即可享受智能赛事推荐、日程管理、参赛提醒等一站式服务。</p>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>创建账号</h2>
+      <p>填写以下信息完成注册</p>
+    </div>
+
+    <div class="form-group">
+      <label>注册角色</label>
+      <div class="input-wrap">
+        <span class="icon">👤</span>
+        <select id="roleSelect" onchange="toggleInviteCode()">
+          <option value="student">🎓 学生</option>
+          <option value="admin">🔧 管理员</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>用户名</label>
+      <div class="input-wrap">
+        <span class="icon">👤</span>
+        <input type="text" id="username" placeholder="请输入用户名">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>密码</label>
+      <div class="input-wrap">
+        <span class="icon">🔒</span>
+        <input type="password" id="pwd" placeholder="请设置密码">
+      </div>
+    </div>
+
+    <!-- 学生专属字段 -->
+    <div id="studentFields">
+      <div class="form-group">
+        <label>学校</label>
+        <div class="input-wrap">
+          <span class="icon">🏫</span>
+          <input type="text" id="school" placeholder="请输入学校名称" value="内蒙古大学">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>专业</label>
+        <div class="input-wrap">
+          <span class="icon">📚</span>
+          <input type="text" id="major" placeholder="请输入专业名称" value="计算机科学与技术">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>手机号</label>
+        <div class="input-wrap">
+          <span class="icon">📱</span>
+          <input type="text" id="tel" placeholder="请输入手机号（选填）">
+        </div>
+      </div>
+    </div>
+
+    <!-- 管理员专属字段（默认隐藏） -->
+    <div id="adminFields" class="hidden">
+      <div class="form-group">
+        <label>邀请码</label>
+        <div class="input-wrap">
+          <span class="icon">🔑</span>
+          <input type="text" id="inviteCode" placeholder="请输入管理员邀请码">
+        </div>
+        <div class="hint">💡 联系系统管理员获取邀请码</div>
+      </div>
+    </div>
+
+    <button class="btn-submit" onclick="doRegister()">立 即 注 册</button>
+    <div id="msg"></div>
+    <div class="divider">已有账号？</div>
+    <div class="footer-link">
+      <a onclick="location.href='login.html'">返回登录</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const BASE = `http://127.0.0.1:5000`;
+
+  function toggleInviteCode() {
+    const role = document.getElementById('roleSelect').value;
+    const studentFields = document.getElementById('studentFields');
+    const adminFields = document.getElementById('adminFields');
+
+    if (role === 'admin') {
+      studentFields.classList.add('hidden');
+      adminFields.classList.remove('hidden');
+    } else {
+      studentFields.classList.remove('hidden');
+      adminFields.classList.add('hidden');
+    }
+  }
+
+  async function doRegister() {
+    const role = document.getElementById('roleSelect').value;
+    const username = document.getElementById('username').value.trim();
+    const pwd = document.getElementById('pwd').value.trim();
+    const msg = document.getElementById('msg');
+
+    if (!username || !pwd) {
+      msg.style.color = '#ef4444';
+      msg.innerText = '请填写用户名和密码';
+      return;
+    }
+
+    if (role === 'student') {
+      // 学生注册
+      const school = document.getElementById('school').value.trim() || '内蒙古大学';
+      const major = document.getElementById('major').value.trim() || '计算机科学与技术';
+      const tel = document.getElementById('tel').value.trim() || '';
+
+      msg.style.color = '#64748b';
+      msg.innerText = '正在注册学生账号...';
+
+      try {
+        const res = await fetch(`${BASE}/api/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, pwd, school, major, tel })
+        });
+        const result = await res.json();
+        if (result.code === 200) {
+          msg.style.color = '#22c55e';
+          msg.innerText = `✅ 注册成功！用户ID: ${result.userid}，正在跳转...`;
+          setTimeout(() => location.href = 'login.html', 1500);
+        } else {
+          msg.style.color = '#ef4444';
+          msg.innerText = result.msg || '注册失败';
+        }
+      } catch (e) {
+        msg.style.color = '#ef4444';
+        msg.innerText = '无法连接服务器，请确认后端已启动';
+      }
+
+    } else {
+      // 管理员注册
+      const inviteCode = document.getElementById('inviteCode').value.trim();
+      if (!inviteCode) {
+        msg.style.color = '#ef4444';
+        msg.innerText = '请填写管理员邀请码';
+        return;
+      }
+
+      msg.style.color = '#64748b';
+      msg.innerText = '正在验证邀请码并注册...';
+
+      try {
+        const res = await fetch(`${BASE}/api/admin_register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, pwd, invite_code: inviteCode })
+        });
+        const result = await res.json();
+        if (result.code === 200) {
+          msg.style.color = '#22c55e';
+          msg.innerText = `✅ 管理员注册成功！ID: ${result.adminid}，正在跳转...`;
+          setTimeout(() => location.href = 'login.html', 1500);
+        } else {
+          msg.style.color = '#ef4444';
+          msg.innerText = result.msg || '注册失败';
+        }
+      } catch (e) {
+        msg.style.color = '#ef4444';
+        msg.innerText = '无法连接服务器，请确认后端已启动';
+      }
+    }
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') doRegister(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>管理员后台 - 赛事推荐与日程管理系统</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #f0f4fa; font-family: "Microsoft YaHei", sans-serif; }
+  .navbar { background: #1a3c6e; color: #fff; padding: 0 40px; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .navbar .brand { font-size: 18px; font-weight: 700; }
+  .navbar a { color: #ccc; font-size: 13px; margin-left: 20px; cursor: pointer; text-decoration: none; }
+  .layout { display: flex; min-height: calc(100vh - 60px); }
+  .sidebar { width: 200px; background: #1e2a40; padding: 20px 0; flex-shrink: 0; }
+  .menu-item { padding: 14px 24px; color: #ccc; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+  .menu-item:hover, .menu-item.active { background: #2d6abf; color: #fff; }
+  .main { flex: 1; padding: 30px; }
+  .section-title { font-size: 20px; color: #1a3c6e; font-weight: 700; margin-bottom: 20px; }
+  .panel { background: #fff; border-radius: 14px; padding: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 24px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: #1a3c6e; color: #fff; padding: 12px 16px; font-size: 13px; text-align: left; }
+  td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: #333; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f8fafd; }
+  .btn-sm { padding: 5px 14px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
+  .btn-blue { background: #2d6abf; color: #fff; }
+  .btn-green { background: #27ae60; color: #fff; }
+  .btn-red { background: #e74c3c; color: #fff; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label { font-size: 13px; color: #555; font-weight: 600; }
+  .form-group input, .form-group select { padding: 10px 12px; border: 1.5px solid #dde3ef; border-radius: 8px; font-size: 13px; outline: none; }
+  .form-group input:focus, .form-group select:focus { border-color: #2d6abf; }
+  .btn-submit { padding: 11px 32px; background: #2d6abf; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .badge-pending { background: #fff3e0; color: #e07b00; }
+  .badge-done { background: #eaf6ec; color: #27ae60; }
+  #addMsg { margin-top: 10px; font-size: 13px; }
+  .ok { color: #27ae60; } .err { color: #e74c3c; }
+  #feedMsg { text-align:center; padding:30px; color:#888; }
+</style>
+</head>
+<body>
+<div class="navbar">
+  <div class="brand">🏆 赛事系统 - 管理员后台</div>
+  <div>
+    <span id="adminName" style="color:#90c8ff;font-size:13px;"></span>
+    <a onclick="logout()">退出登录</a>
+  </div>
+</div>
+<div class="layout">
+  <div class="sidebar">
+    <div class="menu-item active" onclick="showPanel('feedback')">📋 用户反馈管理</div>
+    <div class="menu-item" onclick="showPanel('addComp')">➕ 新增赛事</div>
+    <div class="menu-item" onclick="showPanel('compList')">📊 赛事管理</div>
+  </div>
+  <div class="main">
+    <!-- 反馈管理面板 -->
+    <div id="panel-feedback">
+      <div class="section-title">📋 用户反馈管理</div>
+      <div class="panel">
+        <div id="feedMsg">加载中...</div>
+        <table id="feedTable" style="display:none">
+          <thead><tr><th>反馈ID</th><th>用户名</th><th>反馈内容</th><th>提交时间</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody id="feedBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- 新增赛事面板 -->
+    <div id="panel-addComp" style="display:none">
+      <div class="section-title">➕ 新增赛事信息</div>
+      <div class="panel">
+        <div class="form-grid">
+          <div class="form-group"><label>赛事名称 *</label><input type="text" id="cn" placeholder="例：蓝桥杯大赛"></div>
+          <div class="form-group"><label>赛事级别 *</label>
+            <select id="cl"><option value="校赛">校赛</option><option value="省赛">省赛</option><option value="国赛">国赛</option></select>
+          </div>
+          <div class="form-group"><label>适配专业方向 *</label><input type="text" id="mj" placeholder="例：计算机类"></div>
+          <div class="form-group"><label>所属学院ID</label><input type="text" id="colid" value="C001" placeholder="C001"></div>
+          <div class="form-group"><label>报名截止日期 *</label><input type="date" id="st"></div>
+          <div class="form-group"><label>比赛日期 *</label><input type="date" id="gt"></div>
+        </div>
+        <button class="btn-submit" onclick="addComp()">确认添加</button>
+        <div id="addMsg"></div>
+      </div>
+    </div>
+    <!-- 赛事管理面板 -->
+    <div id="panel-compList" style="display:none">
+      <div class="section-title">📊 全部赛事列表</div>
+      <div class="panel">
+        <div id="compMsg">加载中...</div>
+        <table id="compTable" style="display:none">
+          <thead><tr><th>ID</th><th>赛事名称</th><th>级别</th><th>适配专业</th><th>报名截止</th><th>比赛时间</th></tr></thead>
+          <tbody id="compBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.getElementById('adminName').innerText = '管理员：' + (localStorage.getItem('username') || 'admin');
+  const panels = ['feedback','addComp','compList'];
+
+  function showPanel(name) {
+    panels.forEach(p => {
+      document.getElementById('panel-'+p).style.display = p===name ? 'block' : 'none';
+    });
+    document.querySelectorAll('.menu-item').forEach((el,i) => {
+      el.classList.toggle('active', panels[i]===name);
+    });
+    if (name==='feedback') loadFeedback();
+    if (name==='compList') loadComps();
+  }
+
+  async function loadFeedback() {
+    try {
+      const res = await fetch('http://127.0.0.1:5000/api/admin/feedback');
+      const result = await res.json();
+      const data = result.data || [];
+      document.getElementById('feedMsg').style.display = 'none';
+      if (!data.length) { document.getElementById('feedMsg').style.display='block'; document.getElementById('feedMsg').innerText='暂无反馈数据'; return; }
+      document.getElementById('feedTable').style.display = 'table';
+      document.getElementById('feedBody').innerHTML = data.map(item => `
+        <tr>
+          <td>${item.feed_id}</td>
+          <td>${item.username}</td>
+          <td style="max-width:280px;word-break:break-all">${item.content}</td>
+          <td>${item.submit_time}</td>
+          <td><span class="badge ${item.deal_status==='未处理'?'badge-pending':'badge-done'}">${item.deal_status}</span></td>
+          <td>${item.deal_status==='未处理'?`<button class="btn-sm btn-green" onclick="dealFeed('${item.feed_id}')">标记已处理</button>`:'—'}</td>
+        </tr>`).join('');
+    } catch(e) { document.getElementById('feedMsg').innerText='加载失败，请检查后端服务'; }
+  }
+
+  async function dealFeed(feed_id) {
+    const res = await fetch('http://127.0.0.1:5000/api/admin/deal_feedback', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({feed_id})
+    });
+    const result = await res.json();
+    if (result.code===200) loadFeedback();
+    else alert(result.msg);
+  }
+
+  async function loadComps() {
+    try {
+      const res = await fetch('http://127.0.0.1:5000/api/competition');
+      const result = await res.json();
+      const data = result.data || [];
+      document.getElementById('compMsg').style.display = 'none';
+      document.getElementById('compTable').style.display = 'table';
+      document.getElementById('compBody').innerHTML = data.map(item => `
+        <tr>
+          <td>${item.comp_id}</td>
+          <td><strong>${item.comp_name}</strong></td>
+          <td>${item.comp_level}</td>
+          <td>${item.major_type}</td>
+          <td>${item.sign_time||'待定'}</td>
+          <td>${item.game_time||'待定'}</td>
+        </tr>`).join('');
+    } catch(e) { document.getElementById('compMsg').innerText='加载失败'; }
+  }
+
+  async function addComp() {
+    const body = {
+      comp_name: document.getElementById('cn').value.trim(),
+      comp_level: document.getElementById('cl').value,
+      major_type: document.getElementById('mj').value.trim(),
+      college_id: document.getElementById('colid').value.trim(),
+      sign_time: document.getElementById('st').value,
+      game_time: document.getElementById('gt').value
+    };
+    const msg = document.getElementById('addMsg');
+    if (!body.comp_name||!body.major_type||!body.sign_time||!body.game_time) {
+      msg.className='err'; msg.innerText='请填写所有必填项'; return;
+    }
+    msg.className=''; msg.innerText='提交中...';
+    try {
+      const res = await fetch('http://127.0.0.1:5000/api/admin/add_comp', {
+        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
+      });
+      const result = await res.json();
+      if (result.code===200) { msg.className='ok'; msg.innerText=`✅ 赛事 ${result.comp_id} 添加成功`; }
+      else { msg.className='err'; msg.innerText=result.msg; }
+    } catch(e) { msg.className='err'; msg.innerText='请求失败'; }
+  }
+
+  function logout() { localStorage.clear(); location.href='login.html'; }
+  window.onload = () => loadFeedback();
+</script>
+</body>
+</html>
